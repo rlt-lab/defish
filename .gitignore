@@ -4,3 +4,5 @@ __pycache__/
 *.spec
 .DS_Store
 WINDOWS.md
+ffmpeg/work/
+ffmpeg/out/

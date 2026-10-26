@@ -18,12 +18,15 @@ The app isn't signed yet, so the first launch needs one extra step:
 
 ## Licence
 
-defish bundles [FFmpeg](https://ffmpeg.org), which is licensed under the GNU GPL (v2+ in the macOS build, v3 in the
-Windows build). Each download includes `NOTICE.txt` with the FFmpeg version and build configuration, plus the licence
-texts in `licenses/` for FFmpeg and the other bundled components (Python, Tcl/Tk and others). Each release also
-includes the matching FFmpeg source (`ffmpeg-<version>.tar.xz`).
+defish bundles [FFmpeg](https://ffmpeg.org) with x264, licensed under the GNU GPL v2 or later. It's built from
+source by [`ffmpeg/build.sh`](ffmpeg/build.sh), and every release includes the complete corresponding source
+(`ffmpeg-source-macos.tar.gz`, `ffmpeg-source-windows.tar.gz`: the FFmpeg, x264 and zlib sources plus the build script).
+Each download includes `NOTICE.txt` and the licence texts in `licenses/` for FFmpeg and the other bundled components
+(Python, Tcl/Tk and others).
 
 ## Run from source
+
+Uses imageio-ffmpeg's prebuilt FFmpeg for development.
 
 ```
 uv run --python 3.13 --with imageio-ffmpeg python app.py
@@ -35,21 +38,23 @@ uv run --python 3.13 --with imageio-ffmpeg python app.py
 uv run --python 3.13 --with imageio-ffmpeg python check.py [fisheye-video]
 ```
 
-Without a video it uses a synthetic test pattern.
+Without a video it uses a synthetic test pattern. To check a specific FFmpeg (as CI does with the one that ships),
+set `IMAGEIO_FFMPEG_EXE` to its path.
 
 ## Build
 
 ```
-uv run --python 3.13 --with imageio-ffmpeg --with pyinstaller --with pillow python build.py
+ffmpeg/build.sh macos    # needs pkgconf (brew install pkgconf); Windows: ffmpeg/build.sh windows on Linux with mingw-w64
+uv run --python 3.13 --with pyinstaller --with pillow python build.py
 ```
 
 PyInstaller can't cross-compile, so build the `.app` on macOS and the `.exe` on Windows. Every push builds both
-in GitHub Actions; download them from the run's artifacts (`defish-macos-latest`, `defish-windows-latest`).
+in GitHub Actions; download them from the run's artifacts (`defish-macos`, `defish-windows`).
 
 ## Release
 
 ```
-git tag v0.1.0 && git push origin v0.1.0
+git tag vX.Y.Z && git push origin vX.Y.Z
 ```
 
-CI builds both, then publishes `defish-macos.zip` and `defish-windows.zip` as a GitHub Release.
+CI builds both, then publishes `defish-macos.zip`, `defish-windows.zip` and the FFmpeg source bundles as a GitHub Release.

@@ -10,9 +10,11 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from tkinter import font as tkfont
 
-import imageio_ffmpeg
-
-FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
+if getattr(sys, "frozen", False):  # packaged app: the FFmpeg that ffmpeg/build.sh builds from source
+    FFMPEG = os.path.join(sys._MEIPASS, "ffmpeg.exe" if sys.platform == "win32" else "ffmpeg")
+else:
+    import imageio_ffmpeg
+    FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 # Flat view of the straight-down 180° fisheye, tilted 35° toward one wall. Spinning it with `roll`
 # (applied before the tilt) picks the wall; panels are 90° apart.
 V360 = ("v360=input=fisheye:ih_fov=180:iv_fov=180:output=flat:d_fov=140:pitch=35:rorder=rpy"
