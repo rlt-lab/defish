@@ -19,8 +19,9 @@ The app isn't signed yet, so the first launch needs one extra step:
 ## Licence
 
 defish bundles [FFmpeg](https://ffmpeg.org), which is licensed under the GNU GPL (v2+ in the macOS build, v3 in the
-Windows build). Each download includes `NOTICE.txt` with the FFmpeg version, build configuration and where to get
-the source, plus the licence texts in `licenses/`.
+Windows build). Each download includes `NOTICE.txt` with the FFmpeg version and build configuration, plus the licence
+texts in `licenses/` for FFmpeg and the other bundled components (Python, Tcl/Tk and others). Each release also
+includes the matching FFmpeg source (`ffmpeg-<version>.tar.xz`).
 
 ## Run from source
 

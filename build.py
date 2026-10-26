@@ -25,10 +25,16 @@ ff = lambda flag: subprocess.run([ffmpeg, "-hide_banner", flag], capture_output=
 (out / "NOTICE.txt").write_text(f"""defish bundles FFmpeg, which runs as a separate program and is licensed under the GNU GPL.
 The full licence texts are in the licenses/ folder (GPL-2.0.txt and GPL-3.0.txt).
 
-FFmpeg source code: https://ffmpeg.org/download.html (release archives: https://ffmpeg.org/releases/)
+FFmpeg source code: ffmpeg-{imageio_ffmpeg.get_ffmpeg_version()}.tar.xz, attached to the same GitHub release as this download
+(https://github.com/rlt-lab/defish/releases), and at https://ffmpeg.org/releases/.
 This FFmpeg binary comes from imageio-ffmpeg {imageio_ffmpeg.__version__}: https://github.com/imageio/imageio-ffmpeg
-Build details for the bundled binary are below; to request a copy of the corresponding source,
+Build details for the bundled binary are below. For the source of the libraries it was built with,
 open an issue at https://github.com/rlt-lab/defish/issues.
+
+defish also bundles, under permissive licences (texts in licenses/):
+  Python and the libraries built into it: OpenSSL, expat, libffi, zlib, libmpdec and others (Python.txt),
+  HACL* (HACL.txt), bzip2 (bzip2.txt), liblzma from XZ Utils (xz.txt), Tcl/Tk (Tcl.txt, Tk.txt),
+  imageio-ffmpeg (imageio-ffmpeg.txt). SQLite is in the public domain.
 
 {ff("-version")}
 
