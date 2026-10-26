@@ -19,7 +19,7 @@ jobs:
       - run: uv run --python 3.13 --with imageio-ffmpeg --with pyinstaller --with pillow python build.py
       # Zip here, not via upload-artifact: its zips drop the .app's symlinks and executable bits.
       - if: runner.os == 'macOS'
-        run: ditto -c -k --keepParent dist/defish.app defish-macos.zip
+        run: ditto -c -k --keepParent dist/defish defish-macos.zip
       - if: runner.os == 'Windows'
         run: Compress-Archive -Path dist/defish -DestinationPath defish-windows.zip
       - uses: actions/upload-artifact@v4
