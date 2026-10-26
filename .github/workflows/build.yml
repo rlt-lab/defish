@@ -1,0 +1,17 @@
+name: build
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv run --python 3.13 --with imageio-ffmpeg python check.py
+      - run: uv run --python 3.13 --with imageio-ffmpeg --with pyinstaller --with pillow python build.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: defish-${{ matrix.os }}
+          path: dist/
