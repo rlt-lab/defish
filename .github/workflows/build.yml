@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - run: uv run --python 3.13 --with ${{ env.IMAGEIO_FFMPEG }} python -c "import imageio_ffmpeg as f; v = f.get_ffmpeg_version(); assert v == '${{ env.FFMPEG_VERSION }}', f'bundled ffmpeg is {v}: update FFMPEG_VERSION'"
+      - run: uv run --python 3.13 --with ${{ env.IMAGEIO_FFMPEG }} python -c "import imageio_ffmpeg as f; v = f.get_ffmpeg_version(); assert v == '${{ env.FFMPEG_VERSION }}', f'bundled ffmpeg is {v}, update FFMPEG_VERSION'"
       - run: uv run --python 3.13 --with ${{ env.IMAGEIO_FFMPEG }} python check.py
       - run: uv run --python 3.13 --with ${{ env.IMAGEIO_FFMPEG }} --with pyinstaller --with pillow python build.py
       # Zip here, not via upload-artifact: its zips drop the .app's symlinks and executable bits.
