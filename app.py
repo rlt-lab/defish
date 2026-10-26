@@ -28,6 +28,9 @@ NAME, DATE = "crop=180:36:222:11", "crop=372:36:28:63"
 NO_WINDOW = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
 
+POS = [(0, 0), (1, 0), (1, 1), (0, 1)]  # (col, row) of each view in the 2x2 grid, clockwise from top-left
+
+
 def wrap(deg):
     return (deg + 180) % 360 - 180  # v360 accepts -180..180
 
@@ -35,7 +38,7 @@ def wrap(deg):
 def cell(p, w, h):
     """xstack position of panel p in the 2x2 grid, clockwise TL, TR, BR, BL. Pixel coords, because
     xstack's w0/h0 form fails when the top-left cell is empty."""
-    x, y = [(0, 0), (1, 0), (1, 1), (0, 1)][p]
+    x, y = POS[p]
     return f"{x * w}_{y * h}"
 
 
@@ -74,13 +77,16 @@ def preview_graph(roll, stamp):
             f"{stamp_bar(stamp, 12)};[out]split[full][d];[d]eq=brightness=-0.32[dim]")
 
 
-def out_size(n):
-    return "1920×570" if n == 2 else "1920×1110"
-
-
 def run(args):
     return subprocess.run([FFMPEG, "-hide_banner", *args], capture_output=True, text=True,
                           encoding="utf-8", errors="replace", creationflags=NO_WINDOW)
+
+
+def render_preview(path, seek, roll, stamp, full_png, dim_png):
+    # -frames:v is per output: without it on both, ffmpeg decodes the whole video for the second PNG.
+    return run(["-v", "error", "-y", "-ss", seek, "-i", path, "-filter_complex", preview_graph(roll, stamp),
+                "-map", "[full]", "-frames:v", "1", "-update", "1", full_png,
+                "-map", "[dim]", "-frames:v", "1", "-update", "1", dim_png])
 
 
 def duration(path):
@@ -110,7 +116,6 @@ def reveal(path):
 SLATE, RAISED, LINE = "#1E2B2B", "#263535", "#34474A"
 CHALK, DUST, AMBER, AMBER_HI = "#E9EEEA", "#8FA19C", "#F39A2B", "#F7B25A"
 REVEAL = "Show in Finder" if sys.platform == "darwin" else "Show in folder"
-GRID = {(0, 0): 0, (1, 0): 1, (1, 1): 2, (0, 1): 3}  # (col, row) -> view, matching cell()
 
 
 class App:
@@ -210,13 +215,14 @@ class App:
 
     @staticmethod
     def cell_xy(p):
-        col, row = next(k for k, v in GRID.items() if v == p)
+        col, row = POS[p]
         return col * CELL_W, row * CELL_H
 
     def cell_at(self, e):
         if not self.src or e.y >= 2 * CELL_H:
             return None
-        return GRID.get((e.x // CELL_W, e.y // CELL_H))
+        k = (e.x // CELL_W, e.y // CELL_H)
+        return POS.index(k) if k in POS else None
 
     def set_hover(self, p):
         if p != self.hover:
@@ -254,7 +260,7 @@ class App:
                 self.reveal_btn.pack(side="right", padx=(0, 12))
             else:
                 layout = {1: "full frame", 2: "side by side", 3: "2×2 grid", 4: "2×2 grid"}[n]
-                self.status_lbl.config(text=f"{layout.capitalize()}, {out_size(n)}, timestamp bar below", fg=DUST)
+                self.status_lbl.config(text=f"{layout.capitalize()}, {'1920×570' if n == 2 else '1920×1110'}, timestamp bar below", fg=DUST)
 
     # ---------- open / export ----------
 
@@ -269,14 +275,12 @@ class App:
         stamp = find_stamp(path, seek)
         # Upside-down timestamp means the file was rotated 180°; undo it so views match the camera's native view.
         roll = 180 if stamp == STAMP_BL else 0
-        r = run(["-v", "error", "-y", "-ss", seek, "-i", path, "-frames:v", "1", "-filter_complex",
-                 preview_graph(roll, stamp), "-map", "[full]", "-update", "1", self.full_png,
-                 "-map", "[dim]", "-update", "1", self.dim_png])
+        r = render_preview(path, seek, roll, stamp, self.full_png, self.dim_png)
         if r.returncode:
             messagebox.showerror("Couldn't open video",
                                  f"{os.path.basename(path)} isn't a fisheye video this app can read.\n\n{r.stderr[-600:]}")
             return
-        self.src, self.dur, self.seek, self.stamp, self.roll = path, dur, seek, stamp, roll
+        self.src, self.dur, self.stamp, self.roll = path, dur, stamp, roll
         self.full, self.dim = tk.PhotoImage(file=self.full_png), tk.PhotoImage(file=self.dim_png)
         self.picked, self.saved = [True] * 4, None
         mins, secs = divmod(round(dur), 60)

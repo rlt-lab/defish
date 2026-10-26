@@ -25,8 +25,7 @@ for n in range(1, 5):
         assert r.returncode == 0, (sel, r.stderr[-500:])
         size = re.search(r"(\d+)x(\d+)", app.run(["-i", out]).stderr.split("Video:")[1]).group(0)
         assert size == ("1920x570" if n == 2 else "1920x1110"), (sel, size)  # + 30 px timestamp bar
-r = app.run(["-v", "error", "-y", "-i", src, "-frames:v", "1", "-filter_complex", app.preview_graph(0, stamp),
-             "-map", "[full]", "-update", "1", out, "-map", "[dim]", "-update", "1", out])
+r = app.render_preview(src, "0", 0, stamp, out, out)
 assert r.returncode == 0, r.stderr[-500:]
 r = app.run(["-v", "error", "-y", "-i", src, "-t", "0.5", "-filter_complex", app.graph(0, stamp, [0]),
              "-map", "[out]", "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
